@@ -19,10 +19,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6      # Updated from v4
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6  # Updated from v5
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -30,9 +30,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Restore seen_news.json จาก cache (ป้องกันส่งข่าวซ้ำ)
+      # Restore seen_news.json
       - name: Restore seen news cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5         # Updated from v4
         with:
           path: seen_news.json
           key: seen-news-${{ github.run_id }}
@@ -50,7 +50,7 @@ jobs:
       # บันทึก seen_news.json กลับขึ้น cache
       - name: Save seen news cache
         if: always()
-        uses: actions/cache@v4
+        uses: actions/cache@v5         # Updated from v4
         with:
           path: seen_news.json
           key: seen-news-${{ github.run_id }}
