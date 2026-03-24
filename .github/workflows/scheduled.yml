@@ -1,0 +1,60 @@
+name: 📊 Stock Bot — รายงานตามเวลา
+
+on:
+  schedule:
+    # เช้า 08:45 น. (ไทย = UTC+7 → 01:45 UTC)
+    - cron: '45 1 * * 1-5'
+    # เย็น 16:30 น. (ไทย = UTC+7 → 09:30 UTC)
+    - cron: '30 9 * * 1-5'
+
+  # กดรันมือได้จาก GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'โหมด (morning หรือ evening)'
+        required: true
+        default: 'morning'
+        type: choice
+        options: [morning, evening]
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # กำหนดโหมดตามเวลา UTC
+      - name: Set mode
+        id: set-mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            HOUR=$(date -u +%H)
+            if [ "$HOUR" = "01" ]; then
+              echo "mode=morning" >> $GITHUB_OUTPUT
+            else
+              echo "mode=evening" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Run bot
+        env:
+          ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "Running mode: ${{ steps.set-mode.outputs.mode }}"
+          python bot.py ${{ steps.set-mode.outputs.mode }}

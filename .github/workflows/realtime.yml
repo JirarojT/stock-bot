@@ -1,0 +1,56 @@
+name: 🚨 Stock Bot — Real-time Monitor
+
+on:
+  schedule:
+    # ทุก 5 นาที ช่วงตลาดเปิด (9:00–16:35 ไทย = 2:00–9:35 UTC) วันจันทร์–ศุกร์
+    # GitHub Actions cron ขั้นต่ำคือทุก 5 นาที
+    - cron: '*/5 2-9 * * 1-5'
+
+  workflow_dispatch:  # กดรันมือได้
+
+concurrency:
+  group: monitor          # ป้องกัน run ซ้อนกัน
+  cancel-in-progress: true
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6    # ถ้าค้างเกิน 6 นาที ให้หยุด
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Restore seen_news.json จาก cache (ป้องกันส่งข่าวซ้ำ)
+      - name: Restore seen news cache
+        uses: actions/cache@v4
+        with:
+          path: seen_news.json
+          key: seen-news-${{ github.run_id }}
+          restore-keys: |
+            seen-news-
+
+      # รัน monitor
+      - name: Run realtime monitor
+        env:
+          ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python bot.py monitor
+
+      # บันทึก seen_news.json กลับขึ้น cache
+      - name: Save seen news cache
+        if: always()
+        uses: actions/cache@v4
+        with:
+          path: seen_news.json
+          key: seen-news-${{ github.run_id }}
