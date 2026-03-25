@@ -231,7 +231,7 @@ def get_daily_picks(news_text: str, prices: dict) -> str:
             f"ข่าววันนี้:\n{news_text}\n\n"
             f"สไตล์: {style_label}\n"
             f"งบต่อ trade: {BUDGET_PER_TRADE:,} บาท\n\n"
-            "แนะนำหุ้น 3 ตัว เลือกจากรายการที่มีราคาให้เท่านั้น "
+            "แนะนำหุ้น 5 ตัว เลือกจากรายการที่มีราคาให้เท่านั้น "
             "คำนวณ entry/TP/SL จากราคาจริงด้านบน "
             "ตอบเป็น JSON array:\n"
             '[{"symbol":"","name":"","sector":"",'
