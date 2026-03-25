@@ -8,12 +8,12 @@ on:
 
   workflow_dispatch:  # กดรันมือได้
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: monitor          # ป้องกัน run ซ้อนกัน
   cancel-in-progress: true
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   monitor:
