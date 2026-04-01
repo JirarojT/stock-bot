@@ -243,11 +243,13 @@ def get_daily_picks(news_text: str, prices: dict) -> str:
     )
 
     # Parse JSON — หา [ ... ] ตัวแรก/ตัวสุดท้าย ทนต่อ code fence และข้อความแทรก
+    print(f"[DEBUG] Claude raw response:\n{raw}\n---")
     try:
         start = raw.index("[")
         end   = raw.rindex("]") + 1
         picks = json.loads(raw[start:end])
-    except Exception:
+    except Exception as e:
+        print(f"[DEBUG] JSON parse error: {e}")
         picks = []
 
     if not picks:
