@@ -348,10 +348,16 @@ def morning_report():
 # ──────────────────────────────────────────────
 #  MODE 2: รายงานเย็น (16:30)
 # ──────────────────────────────────────────────
+EVENING_WATCHLIST = {
+    "ธนาคาร": ["KTB", "SCB", "BBL"],
+    "พลังงาน": ["PTT", "PTTGC", "TOP", "GULF", "BANPU"],
+}
+
 def evening_report():
     print(f"[{now_th():%H:%M}] รายงานเย็น...")
 
-    prices    = fetch_all_prices()
+    all_symbols = [s for group in EVENING_WATCHLIST.values() for s in group]
+    prices    = {sym: p for sym, p in fetch_all_prices().items() if sym in all_symbols}
     news_text = news_to_text(fetch_rss_news(max_items=8))
 
     analysis = ask_claude(
@@ -371,16 +377,18 @@ def evening_report():
         ),
     )
 
-    # สรุปราคาปิด
-    price_lines = "\n".join(
-        f"{sym}: {price:.2f} บาท"
-        for sym, price in prices.items()
-    ) or "ไม่มีข้อมูล"
+    # สรุปราคาปิดแยกกลุ่ม
+    price_lines = ""
+    for group, symbols in EVENING_WATCHLIST.items():
+        price_lines += f"\n<b>{group}</b>\n"
+        for sym in symbols:
+            if sym in prices:
+                price_lines += f"  {sym}: {prices[sym]:.2f} บาท\n"
 
     send_telegram(
         f"🌆 <b>รายงานเย็น — {now_th():%d/%m/%Y %H:%M}</b>\n"
-        f"{'─'*28}\n\n"
-        f"<b>ราคาปิดวันนี้</b>\n{price_lines}\n\n"
+        f"{'─'*28}\n"
+        f"{price_lines}\n"
         f"{'─'*28}\n\n"
         f"{analysis}\n\n"
         f"{'─'*28}\n"
