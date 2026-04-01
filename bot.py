@@ -245,9 +245,13 @@ def get_daily_picks(news_text: str, prices: dict) -> str:
     # Parse JSON
     try:
         clean = re.sub(r"```(?:json)?|```", "", raw).strip()
-        picks = json.loads(clean)
+        match = re.search(r"\[.*\]", clean, re.DOTALL)
+        picks = json.loads(match.group() if match else clean)
     except Exception:
-        return f"หุ้นแนะนำวันนี้\n\n{raw}"
+        picks = []
+
+    if not picks:
+        return f"🎯 <b>หุ้นแนะนำวันนี้</b>\n\n{raw}"
 
     signal_icon = {"STRONG_BUY": "🔥", "BUY": "✅", "WATCH": "👀"}
     lines = [
