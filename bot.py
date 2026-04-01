@@ -239,17 +239,15 @@ def get_daily_picks(news_text: str, prices: dict) -> str:
             '"tp1":0,"tp2":0,"sl":0,'
             '"hold_days":"","rr_ratio":"","catalyst":"","signal":"BUY"}]'
         ),
-        max_tokens=1000,
+        max_tokens=2000,
     )
 
     # Parse JSON — หา [ ... ] ตัวแรก/ตัวสุดท้าย ทนต่อ code fence และข้อความแทรก
-    print(f"[DEBUG] Claude raw response:\n{raw}\n---")
     try:
         start = raw.index("[")
         end   = raw.rindex("]") + 1
         picks = json.loads(raw[start:end])
-    except Exception as e:
-        print(f"[DEBUG] JSON parse error: {e}")
+    except Exception:
         picks = []
 
     if not picks:
