@@ -242,16 +242,16 @@ def get_daily_picks(news_text: str, prices: dict) -> str:
         max_tokens=1000,
     )
 
-    # Parse JSON
+    # Parse JSON — หา [ ... ] ตัวแรก/ตัวสุดท้าย ทนต่อ code fence และข้อความแทรก
     try:
-        clean = re.sub(r"```(?:json)?|```", "", raw).strip()
-        match = re.search(r"\[.*\]", clean, re.DOTALL)
-        picks = json.loads(match.group() if match else clean)
+        start = raw.index("[")
+        end   = raw.rindex("]") + 1
+        picks = json.loads(raw[start:end])
     except Exception:
         picks = []
 
     if not picks:
-        return f"🎯 <b>หุ้นแนะนำวันนี้</b>\n\n{raw}"
+        return "🎯 <b>หุ้นแนะนำวันนี้</b>\n\nไม่สามารถโหลดข้อมูลหุ้นแนะนำได้ในขณะนี้"
 
     signal_icon = {"STRONG_BUY": "🔥", "BUY": "✅", "WATCH": "👀"}
     lines = [
